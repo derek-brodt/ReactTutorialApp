@@ -2,6 +2,18 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 
+
+// Future implementations
+// TODO: Display the location for each move in the format (col, row) in the move history list.
+// TODO: Bold the currently selected item in the move list.
+// TODO: Rewrite Board to use two loops to make the squares instead of hardcoding them.
+// TODO: Add a toggle button that lets you sort the moves in either ascending or descending order.
+// TODO: When someone wins, highlight the three squares that caused the win.
+// TODO: When no one wins, display a message about the result being a draw.
+
+
+
+
 // The Squares are "controlled components", the board has full control over them
 function Square(props) {
       // We can't modify the parent's state so we have
