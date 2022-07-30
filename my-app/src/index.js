@@ -18,65 +18,21 @@ function Square(props) {
   }
   
   class Board extends React.Component {
-    // Specifies what happens upon construction of the class
-    constructor(props){
-      // All JavaScript classes need to call super when defining the constructor
-      // react component classes must state with super(props)
 
-      // React automatically detects constructors that are useless (only inits state that is already there)
-      super(props);
-      this.state = {
-        squares:Array(9).fill(null),
-        xIsNext: true,
-      };
-    }
-
-    handleClick(i) {
-      // Const is the array structure, not the values within it
-      // We maintain immutability because:
-      // 1. Complex features such as a history of moves becomes easier to implement
-      // 2. Detecting changesi n mutable objects is difficult since they are modified directly.
-      //    This requires the mutable object to be compared to previous copies of itself
-      //    and the entire object tree must be traversed. Immutable objects are easier;
-      //    to detect immutable changes, check if the object referenced is different than the previous one
-      // 3. Detecting changes determines when components must be re-rendered https://reactjs.org/docs/optimizing-performance.html#examples
-      const const_squares = this.state.squares.slice();
-      if (calculateWinner(const_squares) || const_squares[i]) {
-        return;
-      }
-      // Change the constant's values
-      const_squares[i] = this.state.xIsNext ? "X" : "O";
-      // Changes the squares state to the updated values of the squares
-      // States must be set by this.setState
-      this.setState({
-        squares: const_squares,
-        xIsNext: !this.state.xIsNext
-      })
-    }
+    
 
     renderSquare(i) {
       return (
         <Square 
-          value={this.state.squares[i]}
-          onClick={() => this.handleClick(i)}
+          value={this.props.squares[i]}
+          onClick={() => this.props.onClick(i)}
          />
       );
     }
   
     render() {
-      const winner = calculateWinner(this.state.squares);
-      let status;
-      // If winner is X or O, it returns True; if null, evaluates to false
-      if (winner) {
-        status = "Winner " + winner;
-      } else {
-        status = 'Next player: ' + (this.state.xIsNext ? "X" : "O");
-      }
-      
-  
       return (
         <div>
-          <div className="status">{status}</div>
           <div className="board-row">
             {this.renderSquare(0)}
             {this.renderSquare(1)}
@@ -98,14 +54,65 @@ function Square(props) {
   }
   
   class Game extends React.Component {
+    constructor(props) {
+      super(props);
+      this.state = {
+        history: [{
+          squares: Array(9).fill(null),
+        }],
+        XisNext: true,
+      };
+    }
+
+    handleClick(i) {
+      // Const is the array structure, not the values within it
+      // We maintain immutability because:
+      // 1. Complex features such as a history of moves becomes easier to implement
+      // 2. Detecting changesi n mutable objects is difficult since they are modified directly.
+      //    This requires the mutable object to be compared to previous copies of itself
+      //    and the entire object tree must be traversed. Immutable objects are easier;
+      //    to detect immutable changes, check if the object referenced is different than the previous one
+      // 3. Detecting changes determines when components must be re-rendered https://reactjs.org/docs/optimizing-performance.html#examples
+      const history = this.state.history;
+      const current = history[history.length-1];
+      const const_squares = current.squares.slice();
+      if (calculateWinner(const_squares) || const_squares[i]) {
+        return;
+      }
+      // Change the constant's values
+      const_squares[i] = this.state.xIsNext ? "X" : "O";
+      // Changes the squares state to the updated values of the squares
+      // States must be set by this.setState
+      this.setState({
+        // We prefer concat over push because it doesn't mutate the original array
+        history: history.concat([{
+          squares: const_squares,
+        }]),
+        xIsNext: !this.state.xIsNext,
+      })
+    }
+
     render() {
+      const history = this.state.history;
+      const current = history[history.length-1];
+      const winner = calculateWinner(current.squares);
+      let status;
+      if (winner) {
+        status = "Winner: " + winner;
+      } else {
+        status = "Next player " + (this.state.xIsNext ? "X" : "O");
+      }
       return (
         <div className="game">
           <div className="game-board">
-            <Board />
+            <Board 
+              squares = {current.squares}
+              onClick= {(i) => this.handleClick(i)}
+
+            />
           </div>
           <div className="game-info">
-            <div>{/* status */}</div>
+            <div>{status}</div>
             <ol>{/* TODO */}</ol>
           </div>
         </div>
