@@ -61,6 +61,7 @@ function Square(props) {
           squares: Array(9).fill(null),
         }],
         XisNext: true,
+        stepNumber: 0,
       };
     }
 
@@ -73,7 +74,8 @@ function Square(props) {
       //    and the entire object tree must be traversed. Immutable objects are easier;
       //    to detect immutable changes, check if the object referenced is different than the previous one
       // 3. Detecting changes determines when components must be re-rendered https://reactjs.org/docs/optimizing-performance.html#examples
-      const history = this.state.history;
+      // Depending on the step number, make the history all of history up to the current stepNumber
+      const history = this.state.history.slice(0, this.state.stepNumber + 1);
       const current = history[history.length-1];
       const const_squares = current.squares.slice();
       if (calculateWinner(const_squares) || const_squares[i]) {
@@ -88,14 +90,38 @@ function Square(props) {
         history: history.concat([{
           squares: const_squares,
         }]),
+        // Set the stepNumber to the len of history after every click
+        stepNumber: history.length,
         xIsNext: !this.state.xIsNext,
       })
     }
 
+    jumpTo(step) {
+      this.setState ({
+        // We don't have to update
+        stepNumber: step,
+        xIsNext: (step % 2) === 0,
+      });
+    }
+
     render() {
       const history = this.state.history;
-      const current = history[history.length-1];
+      // History is the current step number
+      const current = history[this.state.stepNumber];
       const winner = calculateWinner(current.squares);
+
+      const moves = history.map((step, move) => {
+        const desc = move ?
+          "Go to move #" + move:
+          "Go to game start";
+          return (
+            // React needs to have dynamic list items have a unique ID associated with it so then if
+            // they change, react can know which components to keep and which to change
+            <li key={move}>
+              <button onClick={() => this.jumpTo(move)}>{desc}</button>
+            </li>
+          )
+      })
       let status;
       if (winner) {
         status = "Winner: " + winner;
@@ -113,7 +139,7 @@ function Square(props) {
           </div>
           <div className="game-info">
             <div>{status}</div>
-            <ol>{/* TODO */}</ol>
+            <ol>{moves}</ol>
           </div>
         </div>
       );
